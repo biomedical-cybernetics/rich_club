@@ -1,4 +1,4 @@
-function [pvalue, deg_peak, peak, peak_rand, richclub, richclub_normdiff, deg_uni] = richclub_test(x, x_rand)
+function [pvalue, deg_peak, peak, peak_rand, richclub, richclub_rand_mean, richclub_normdiff, deg_uni] = richclub_test(x, x_rand)
 
 % Reference:
 % Muscoloni, A. and Cannistraci, C.V. (2017)
@@ -30,16 +30,18 @@ function [pvalue, deg_peak, peak, peak_rand, richclub, richclub_normdiff, deg_un
 % deg_peak - degree corresponding to the peak;
 %          if the pvalue is significant, the richclub subnetwork is
 %          composed of the nodes with degree greater than deg_peak.
-% peak - maximum value of the normalized richclub coefficient in the input network
-% peak_rand - vector containing the peak for each randomized network
+% peak - maximum value of the normalized richclub coefficient in the input network.
+% peak_rand - vector containing the peak for each randomized network.
 % richclub - vector containing for each degree value in the input network
 %          the richclub coefficient (the last degree value is not considered,
 %          since there are not nodes with degree greater than the maximum);
 %          if the last k-subnetwork is composed of one node, the richclub
 %          coefficient will be NaN.
+% richclub_rand_mean - vector containing for each degree value in the input network
+%          the mean richclub coefficient of the randomized networks.
 % richclub_normdiff - vector containing for each degree value in the input network
-%          the normalized richclub coefficient (the last degree value is not considered)
-% deg_uni - vector of unique degree values in increasing order
+%          the normalized richclub coefficient (the last degree value is not considered).
+% deg_uni - vector of unique degree values in increasing order.
 
 % check input
 narginchk(2,2)
@@ -58,6 +60,7 @@ deg_uni = unique(deg)';
 d = length(deg_uni);
 m = length(x_rand);
 richclub = zeros(d-1,1);
+richclub_rand_mean = zeros(d-1,1);
 richclub_normdiff = zeros(d-1,1);
 richclub_rand_normdiff = zeros(d-1,m);
 
@@ -75,15 +78,15 @@ for j = 1:d-1
     end
     
     % normalization factor: mean richclub coefficient of the randomized networks
-    richclub_rand_k_mean = mean(richclub_rand_k);
+    richclub_rand_mean(j) = mean(richclub_rand_k);
     
     % for each randomized network compute the normalized richclub coefficient
-    richclub_rand_normdiff(j,:) = richclub_rand_k - richclub_rand_k_mean;
+    richclub_rand_normdiff(j,:) = richclub_rand_k - richclub_rand_mean(j);
     
     % compute the richclub and normalized richclub coefficients for the input network
     x_k = x(deg>k,deg>k);
     richclub(j) = mean(x_k(triu(true(size(x_k)),1)));
-    richclub_normdiff(j) = richclub(j) - richclub_rand_k_mean;
+    richclub_normdiff(j) = richclub(j) - richclub_rand_mean(j);
     
 end
 

@@ -20,5 +20,5 @@ end
 save('null_model_CM.mat', 'x_rand')
 
 % perform the rich-clubness test
-[pvalue, deg_peak, peak, peak_rand, richclub, richclub_normdiff, deg_uni] = richclub_test(x, x_rand);
-save('richclub_test.mat', 'pvalue', 'deg_peak', 'peak', 'peak_rand', 'richclub', 'richclub_normdiff', 'deg_uni')
+[pvalue, deg_peak, peak, peak_rand, richclub, richclub_rand_mean, richclub_normdiff, deg_uni] = richclub_test(x, x_rand);
+save('richclub_test.mat', 'pvalue', 'deg_peak', 'peak', 'peak_rand', 'richclub', 'richclub_rand_mean', 'richclub_normdiff', 'deg_uni')
