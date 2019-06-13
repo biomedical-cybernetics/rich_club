@@ -9,7 +9,7 @@
 
 ## Folder description
 
-* *randomize_network.m*: it performs a randomization of the network in input preserving the node degrees. The randomization consists of an iterative random reshuffle of link pairs. At each iteration two links are randomly sampled (uniformly or nonuniformly, according to the Maslov-Sneppen or Cannistraci-Muscoloni null-model respectively) and one endpoint of the first is randomly exchanged with one endpoint of the second. If the link that would be created already exists, the attempt is rejected.
+* *randomize_network.m*: it performs a randomization of the network in input preserving the node degrees. The randomization consists of an iterative random reshuffle of link pairs. At each iteration two links are randomly sampled (uniformly or nonuniformly, according to the Maslov-Sneppen or Cannistraci-Muscoloni null-model respectively) and one endpoint of the first is randomly exchanged with one endpoint of the second. If the link that would be created already exists, the attempt is rejected. The stop condition for the randomization procedure can be indicated either as a percentage of link diversity between the original and randomized network or as a number of iterations to perform.
 * *richclub_test.m*: it performs the statistical test for rich-clubness giving in output a pvalue that indicates whether the network contains a significant rich-club, and a degree-cut that allows to extract the rich-club subnetwork.
 * *RUN.m*: usage example that loads an example network (*network.mat*), generates 1000 randomized networks using the CM null-model and performs the rich-clubness test.
 

@@ -1,4 +1,4 @@
-function [x, eff] = randomize_network(x, null_model, iters, max_rej)
+function [x, stop_curr] = randomize_network(x, null_model, stop, max_rej)
 
 % References:
 % 1) Cannistraci-Muscoloni null-model
@@ -21,18 +21,25 @@ function [x, eff] = randomize_network(x, null_model, iters, max_rej)
 % according to the Maslov-Sneppen or Cannistraci-Muscoloni null-model respectively)
 % and one endpoint of the first is randomly exchanged with one endpoint of the second.
 % If the link that would be created already exists, the attempt is rejected.
+% The stop condition for the randomization procedure can be indicated either
+% as a percentage of link diversity between the original and randomized network
+% or as a number of iterations to perform.
 
 %%% INPUT %%%
 % x - adjacency matrix of the network, which must be symmetric, zero-diagonal, unweighted.
 %
 % null_model - null-model used for the randomization of the network, the alternatives are:
-%      'CM' -> (Cannistraci-Muscoloni) links sampled nonuniformly;
+%       'CM' -> (Cannistraci-Muscoloni) links sampled nonuniformly;
 %              one link according to probabilities proportional to the degree-product
 %              and one link with inverse probabilities.
-%      'MS' -> (Maslov-Sneppen) links sampled uniformly.
+%       'MS' -> (Maslov-Sneppen) links sampled uniformly.
 %
-% iters - number of iterations of the randomization procedure;
-%         [optional] if not given or empty, it is set by default to 10*edges.
+% stop - stop condition for the randomization procedure, two possible options:
+%       real value in [0,1] -> it indicates the percentage of link diversity to reach.
+%               example: stop = 0.1 will stop the randomization procedure when
+%               the link diversity of 10% between original and randomized network is reached.
+%       integer value > 1   -> it indicates the number of iterations of the randomization procedure.
+%       [optional] if not given or empty, it is set by default to 10*edges.
 %
 % max_rej - number of consecutive rejections that stops the procedure;
 %           [optional] if not given, it is set by default to Inf,
@@ -41,14 +48,14 @@ function [x, eff] = randomize_network(x, null_model, iters, max_rej)
 %%% OUTPUT %%%
 % x - adjacency matrix of the randomized network.
 %
-% eff - number of effective iterations, in case the procedure is stopped
-%       due to a maximum number of consecutive rejections.
+% stop_curr - current percentage of link diversity or number of iterations reached,
+%       in case the procedure is stopped due to a maximum number of consecutive rejections.
 
 % Possible usage:
-% randomize_network(x, null_model)                  [default iters and max_rej]
-% randomize_network(x, null_model, iters)           [default max_rej]
-% randomize_network(x, null_model, [], max_rej)     [default iters]
-% randomize_network(x, null_model, iters, max_rej)
+% randomize_network(x, null_model)                  [default stop and max_rej]
+% randomize_network(x, null_model, stop)            [default max_rej]
+% randomize_network(x, null_model, [], max_rej)     [default stop]
+% randomize_network(x, null_model, stop, max_rej)
 
 % check input
 narginchk(2,4)
@@ -66,10 +73,10 @@ elseif strcmp(null_model,'MS')
 else
     error('Possible null-models: ''CM'',''MS''.');
 end
-if ~exist('iters', 'var')
-    iters = [];
-elseif ~isempty(iters)
-    validateattributes(iters, {'numeric'}, {'scalar','integer','positive','finite'});
+if ~exist('stop', 'var')
+    stop = [];
+elseif ~isempty(stop)
+    validateattributes(stop, {'numeric'}, {'scalar','nonnegative','finite'});
 end
 if ~exist('max_rej', 'var')
     max_rej = Inf;
@@ -81,10 +88,13 @@ end
 n = size(x,1);
 [i,j] = find(triu(x,1));
 E = length(i);
-eff = 0;
+stop_curr = 0;
 rej = 0;
-if isempty(iters)
-    iters = 10*E;
+if isempty(stop)
+    stop = 10*E;
+end
+if stop <= 1
+    x_orig = x;
 end
 
 if nonuniform
@@ -99,7 +109,7 @@ if nonuniform
 end
 
 % randomization
-while eff < iters
+while stop_curr < stop
     
     % stop if reached maximum number of consecutive rejections
     if rej==max_rej
@@ -162,6 +172,12 @@ while eff < iters
         w2(e2) = degprod_rev(i(e2),j(e2));
     end
     
-    eff = eff+1;
+    if stop <= 1
+        % percentage of link diversity
+        stop_curr = 1 - mean(x_orig(triu(x==1,1)));
+    else
+        % number of iterations
+        stop_curr = stop_curr+1;
+    end
     rej = 0;
 end
